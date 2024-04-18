@@ -94,6 +94,7 @@ func Run(settings *settings.Settings, db database.Database, out output.Writer) (
 type columnInfo struct {
 	isNullable bool
 	isTemporal bool
+	isJson     bool
 }
 
 func (c columnInfo) isNullableOrTemporal() bool {
@@ -146,6 +147,9 @@ func createTableStructString(settings *settings.Settings, db database.Database, 
 		if !columnInfo.isNullable {
 			columnInfo.isNullable = col.isNullable
 		}
+		if !columnInfo.isJson {
+			columnInfo.isJson = col.isJson
+		}
 
 		structFields.WriteString(columnName)
 		structFields.WriteString(" ")
@@ -195,6 +199,10 @@ func generateImports(content *strings.Builder, settings *settings.Settings, colu
 		content.WriteString("\t\"time\"\n")
 	}
 
+	if columnInfo.isJson {
+		content.WriteString("\t\"encoding/json\"\n")
+	}
+
 	if settings.IsMastermindStructableRecorder {
 		content.WriteString("\t\n\"github.com/Masterminds/structable\"\n")
 	}
@@ -231,6 +239,14 @@ func mapDbColumnTypeToGoType(s *settings.Settings, db database.Database, column 
 			goType = "bool"
 			if db.IsNullable(column) {
 				goType = getNullType(s, "*bool", "sql.NullBool")
+				columnInfo.isNullable = true
+			}
+		case "json":
+		case "jsonb":
+			goType = "json.RawMessage"
+			columnInfo.isJson = true
+			if db.IsNullable(column) {
+				goType = getNullType(s, "*json.RawMessage", "")
 				columnInfo.isNullable = true
 			}
 		default:

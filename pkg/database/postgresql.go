@@ -198,7 +198,18 @@ func (pg *Postgresql) GetTemporalDatatypes() []string {
 	}
 }
 
+func (pg *Postgresql) GetJsonDatatypes() []string {
+	return []string{
+		"json",
+		"jsonb",
+	}
+}
+
 // IsTemporal returns true if colum is of type temporal for the Postgresql database.
 func (pg *Postgresql) IsTemporal(column Column) bool {
 	return isStringInSlice(column.DataType, pg.GetTemporalDatatypes())
+}
+
+func (pg *Postgresql) IsJson(column Column) bool {
+	return isStringInSlice(column.DataType, pg.GetJsonDatatypes())
 }

@@ -68,3 +68,20 @@ func TestPostgresql_DSN(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgresql_IsTemporal(t *testing.T) {
+	col := Column{
+		OrdinalPosition: 0,
+		Name:            "sync_time",
+		DataType:        "timestamp without time zone",
+		IsNullable:      "YES",
+	}
+
+	db := NewPostgresql(&settings.Settings{
+		DbType: settings.DBTypePostgresql,
+		User:   "my_custom_user",
+		Pswd:   "mysecretpassword",
+		Socket: "/tmp",
+	})
+	assert.Equal(t, db.IsTemporal(col), true)
+}
